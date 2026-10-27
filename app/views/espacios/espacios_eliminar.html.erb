@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Eliminar Espacio</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        background-color: #f4f6f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-top: 40px;
+        margin-bottom: 30px;
+        font-size: 2.2em;
+      }
+
+      table {
+        border-collapse: collapse;
+        margin: 0 auto;
+        width: 80%;
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      th {
+        background-color: #2c3e50;
+        color: #fff;
+        text-align: left;
+        padding: 12px 15px;
+        font-size: 1em;
+      }
+
+      td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      tr:hover {
+        background-color: #eaf3ff;
+        transition: 0.2s ease;
+      }
+
+      /* ===== Botones ===== */
+      .button {
+        display: inline-block;
+        background-color: #e41212ff;
+        color: white;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 0.95em;
+        transition: background-color 0.3s ease;
+      }
+
+      .button:hover {
+        background-color: #e10c0cff;
+      }
+
+      /* ===== Ajuste en pantallas pequeñas ===== */
+      @media (max-width: 768px) {
+        table {
+          width: 95%;
+        }
+
+        th, td {
+          padding: 10px;
+        }
+
+        h1 {
+          font-size: 1.6em;
+        }
+      }
+    </style>
+
+  </head>
+
+  <body>
+
+    <h1>Espacios a Eliminar</h1>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Tipo de Espacio</th>
+            <th>Nombre</th>
+            <th>Ubicacion</th>
+            <th>Capacidad</th>
+            <th>Eliminar Espacio</th>
+        </tr>
+
+        <% @espacios.each do |espacio| %>
+        <tr>
+            <td><%= espacio.id %></td>
+            <td><%= espacio.tipo %></td>
+            <td><%= espacio.nombre %></td>
+            <td><%= espacio.ubicacion %></td>
+            <td><%= espacio.capacidad %></td>
+            <td>
+             <%= button_to "Eliminar", "/espacios/#{espacio.id}", method: :delete, data: { confirm: "¿Estás seguro?" }, class: "button" %>
+            </td>
+        </tr>
+        <% end %>
+    </table>
+
+  </body>
+</html>

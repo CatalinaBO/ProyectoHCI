@@ -1,0 +1,27 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+chat_carlos_cai_m1:
+  usuario: usuario_normal
+  usuario_admin: admin_base
+  espacio: CAI
+  reserva: reserva_usuario_hoy_m1
+
+# ---
+
+#one:
+#  chat_id: 
+#  usuario: one
+#  admin: one
+#  espacio: one
+#  reserva: one
+#  creado_en: 2025-10-03 01:07:35
+#  actualizado_en: 2025-10-03 01:07:35
+
+#two:
+#  chat_id: 
+#  usuario: two
+#  admin: two
+#  espacio: two
+#  reserva: two
+#  creado_en: 2025-10-03 01:07:35
+#  actualizado_en: 2025-10-03 01:07:35

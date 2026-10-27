@@ -1,0 +1,46 @@
+<div class="container mt-5">
+  <div class="card shadow p-4 mx-auto" style="max-width: 500px;">
+    <h2 class="text-center mb-4">Editar Perfil</h2>
+
+    <% if @usuario&.errors&.any? %>
+      <div class="alert alert-danger"> 
+        <ul class="mb-0">
+          <% @usuario.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+
+    <%= form_with model: @usuario, url: perfil_path, method: :patch, local: true, html: { multipart: true }, data: { turbo: false } do |f| %>
+      <div class="mb-3 text-center">
+        <% if @usuario.foto_perfil.attached? %>
+          <%= image_tag @usuario.foto_perfil.variant(resize_to_fill: [160, 160]).processed,
+                        class: "rounded-circle img-thumbnail mb-2",
+                        alt: "Foto actual" %>
+        <% else %>
+          <%= image_tag "default-foto_perfil.png",
+                        class: "rounded-circle img-thumbnail mb-2",
+                        size: "160x160",
+                        alt: "Sin foto" %>
+        <% end %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :foto_perfil, "Seleccionar nueva foto", class: "form-label" %>
+        <%= f.file_field :foto_perfil, class: "form-control", direct_upload: true %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :info_personal, "Información personal (ej. carrera, edad, etc.)" %>
+        <%= f.text_area :info_personal, class: "form-control", rows: 3 %>
+      </div>
+
+      <div class="text-center">
+        <%= f.submit "Actualizar perfil", class: "btn btn-primary" %>
+        <%= link_to "Cancelar", perfil_path, class: "btn btn-secondary ms-2" %>
+      </div>
+    <% end %>
+  </div>
+</div>

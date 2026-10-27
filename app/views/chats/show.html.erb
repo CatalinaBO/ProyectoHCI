@@ -1,0 +1,133 @@
+<% def display_name(u)
+     return "Administrador" if u.nil?
+     u.respond_to?(:nombre) && u.nombre.presence ||
+     u.respond_to?(:nombre_usuario) && u.nombre_usuario.presence ||
+     u.respond_to?(:name) && u.name.presence ||
+     u.respond_to?(:email) && u.email.presence ||
+     "Administrador"
+   end %>
+
+<% titulo_chat =
+     if admin_user?
+       display_name(@chat.usuario)
+     else
+       display_name(@chat.usuario_admin)
+     end %>
+
+<h2 class="text-center mb-4">Chat con <%= titulo_chat %></h2>
+
+<%= turbo_stream_from "chat_#{@chat.id}" %>
+
+<div id="mensajes" class="container mb-4" style="max-width:700px; height:60vh; overflow-y:auto;">
+  <% if @mensajes.any? %>
+    <%= render @mensajes %>
+  <% else %>
+    <p class="text-muted">Aún no hay mensajes. Inicia una conversación.</p>
+  <% end %>
+</div>
+
+<div class="container" style="max-width:700px;">
+  <%= form_with url: chat_mensajes_path(@chat),
+                scope: :mensaje,
+                local: false,
+                class: "d-flex",
+                id: "form-mensaje" do |f| %>
+    <%= f.text_area :contenido,
+                    rows: 1,
+                    class: "form-control me-2",
+                    placeholder: "Escribe un mensaje...",
+                    id: "input-mensaje" %>
+    <%= f.submit "Enviar", class: "btn btn-primary" %>
+  <% end %>
+</div>
+
+<div class="text-center mt-3">
+  <%= link_to "Volver a mis chats", chats_path, class: "btn btn-outline-secondary" %>
+</div>
+
+
+<!-- SCRIPT SCROLL Y AUTOSCROLL -->
+
+
+<script>
+(function(){
+  // --- Inicialización ---
+  const ME = document.body.getAttribute("data-current-user-id");
+
+  // --- Colorear mensajes ---
+  function pintarUno(msg){
+    const bubble = msg.querySelector(".bubble");
+    if (!bubble) return;
+    const uid = msg.getAttribute("data-user-id");
+
+    msg.classList.remove("justify-content-start","justify-content-end");
+    if (ME && uid === ME) {
+      msg.classList.add("justify-content-end");
+      bubble.style.backgroundColor = "#1a73e8";
+      bubble.style.color = "white";
+    } else {
+      msg.classList.add("justify-content-start");
+      bubble.style.backgroundColor = "#f1f1f1";
+      bubble.style.color = "black";
+    }
+  }
+
+  // --- Scroll automático ---
+  function scrollAbajo(){
+    const box = document.getElementById("mensajes");
+    if (box) box.scrollTop = box.scrollHeight;
+  }
+
+  // --- Pintar todos los mensajes actuales ---
+  function pintarInicial(){
+    document.querySelectorAll("#mensajes .msg").forEach(pintarUno);
+    scrollAbajo();
+  }
+
+  // --- Evento Enter y limpieza ---
+  function wireForm(){
+    const form  = document.getElementById("form-mensaje");
+    const input = document.getElementById("input-mensaje");
+    if (!form || !input) return;
+
+    input.addEventListener("keydown", (e)=>{
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        if (input.value.trim() !== "") form.requestSubmit();
+      }
+    });
+
+    document.addEventListener("turbo:submit-end", (ev)=>{
+      if (ev.target && ev.target.id === "form-mensaje" && ev.detail?.success) {
+        form.reset();
+        input.value = "";
+        requestAnimationFrame(scrollAbajo);
+      }
+    });
+  }
+
+  // --- Observar nuevos mensajes ---
+  function observar(){
+    const cont = document.getElementById("mensajes");
+    if (!cont) return;
+    const mo = new MutationObserver((mutations)=>{
+      for (const m of mutations){
+        m.addedNodes.forEach((n)=>{
+          if (n.nodeType !== 1) return;
+          const el = n.matches?.(".msg") ? n : n.querySelector?.(".msg");
+          if (el){
+            pintarUno(el);
+            scrollAbajo();
+          }
+        });
+      }
+    });
+    mo.observe(cont, { childList: true, subtree: true });
+  }
+
+  function onRender(){ pintarInicial(); }
+  document.addEventListener("turbo:load", ()=>{ wireForm(); observar(); onRender(); });
+  document.addEventListener("turbo:render", onRender);
+})();
+</script>
+

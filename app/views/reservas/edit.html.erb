@@ -1,0 +1,108 @@
+<%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" %>
+<%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" %>
+
+<div class="bg-light text-dark min-vh-100 py-5">
+  <div class="container">
+    <header class="pricing-header p-3 pb-md-4 mx-auto text-center">
+      <h1 class="display-4 fw-normal text-body-emphasis">Modificar reserva</h1>
+      <p class="fs-5 text-body-secondary"> Puedes cambiar fecha, tipo y módulo de tu reserva.</p>
+    </header>
+
+    <% if flash[:alert].present? %>
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <%= flash[:alert] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% end %>
+
+    <%= form_with model: @reserva, url: reserva_path(@reserva), method: :patch, local: true do |f| %>
+
+
+      <!-- FECHA -->
+      <h2 class="h5 text-center mb-3"><i class="bi-calendar-date me-2"></i>Calendario</h2>
+      <div class="row mb-4">
+        <div class="col-12 col-lg-6 mx-auto">
+          <div class="card mb-2 rounded-3 shadow-sm">
+            <div class="card-header py-3">
+              <h4 class="fs-6 my-0"><i class=""></i>Fechas</h4>
+            </div>
+            <div class="card-body">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                <%= f.date_field :fecha, class: "form-control", value: (@reserva.fecha || Date.today) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ESPACIO -->
+      <h2 class="h5 text-center mb-3"><i class="bi bi-building me-1"></i>Espacios</h2>
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+        <% @espacios.each do |e| %>
+          <% activo = (@reserva.espacio_id == e.id) %>
+          <div class="col">
+            <div class="card rounded-3 shadow-sm <%= 'border-primary' if activo %> h-100">
+              <div class="card-header py-2 <%= 'text-bg-primary border-primary' if activo %>">
+                <h4 class="h6 my-0"><%= e.nombre %></h4>
+              </div>
+              <div class="card-body py-3 px-3">
+                <ul class="list-unstyled mb-0 small text-muted">
+                  <% if e.respond_to?(:ubicacion) && e.ubicacion.present? %>
+                    <li class="mb-1"><i class="bi bi-geo-alt me-1"></i><%= e.ubicacion %></li>
+                  <% end %>
+                  <% if e.respond_to?(:capacidad) && e.capacidad.present? %>
+                    <li><i class="bi bi-people me-1"></i>Capacidad: <%= e.capacidad %></li>
+                  <% end %>
+                </ul>
+              </div>
+              <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
+                <div class="form-check form-check-sm d-flex align-items-center justify-content-center">
+                  <%= f.radio_button :espacio_id, e.id, id: "espacio_#{e.id}", class: "form-check-input me-2", checked: activo %>
+                  <label class="form-check-label small" for="espacio_#{e.id}">Elegir este espacio</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      
+      <!-- MÓDULO -->
+      <h2 class="h5 text-center mb-3"><i class="bi bi-clock me-2"></i>Módulos</h2>
+      <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+        <% @modulos.each do |m| %>
+          <% activo = (@reserva.modulo_id == m.id) %>
+          <% rango = "#{m.hora_inicio.strftime('%H:%M')} - #{m.hora_fin.strftime('%H:%M')}" %>
+          <div class="col">
+            <div class="card rounded-3 shadow-sm <%= 'border-primary' if activo %> h-100">
+              <div class="card-header py-2 <%= 'text-bg-primary border-primary' if activo %>">
+                <h4 class="h6 my-0">Módulo <%= m.id %></h4>
+              </div>
+              <div class="card-body py-3 px-3">
+                <div class="mb-2 fw-semibold"><%= rango %></div>
+                <ul class="list-unstyled mb-0 small text-muted">
+                  <li>Inicio: <%= m.hora_inicio.strftime('%H:%M') %></li>
+                  <li>Término: <%= m.hora_fin.strftime('%H:%M') %></li>
+                </ul>
+              </div>
+              <div class="card-footer bg-transparent border-0 pt-0 pb-3 px-3">
+                <div class="form-check form-check-sm d-flex align-items-center justify-content-center">
+                  <%= f.radio_button :modulo_id, m.id, id: "modulo_#{m.id}", class: "form-check-input me-2", checked: activo %>
+                  <label class="form-check-label small" for="modulo_#{m.id}">Elegir este módulo</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- GUARDAR -->
+      <div class="text-center">
+        <%= f.submit "Guardar cambios", class: "btn btn-success btn-lg px-4" %>
+        <%= link_to "Cancelar", mis_reservas_path, class: "btn btn-outline-secondary btn-lg ms-2" %>
+      </div>
+
+    <% end %>
+  </div>
+</div>

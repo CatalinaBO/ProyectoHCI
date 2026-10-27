@@ -1,0 +1,16 @@
+<h3 class="map-title">Biblioteca San Joaquín</h3>
+<div class="map-sub">3° Piso</div>
+
+<div class="map-canvas">
+  
+  <div class="grid mb-3" style="--cols:5">
+    <% (1..5).each do |n| %><div class="cell cell-gray"><%= n %></div><% end %>
+  </div>
+  <div class="grid" style="--cols:10">
+    <% (6..15).each do |n| %><div class="cell cell-gray"><%= n %></div><% end %>
+  </div>
+
+  <div class="mt-3 map-legend">
+    1–5: sala individual &nbsp;&nbsp; 6–15: sala grupal
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0"><%= @titulo %></h1>
+    <%= link_to "Volver a espacios", espacios_path, class: "btn btn-outline-secondary btn-sm" %>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="h6">Seleccione una ubicación</h2>
+
+          <%= form_with url: espacios_por_tipo_path(tipo: @tipo),
+                        method: :get, local: true, class: "row g-2 align-items-center" do %>
+            <div class="col-12 col-sm-8">
+              <%= select_tag :ubicacion,
+                    options_for_select(
+                      @ubicaciones.map { |u| [u[:label], u[:value]] },
+                      @ubicacion
+                    ),
+                    include_blank: "Seleccione ubicación…",
+                    class: "form-select" %>
+            </div>
+            <div class="col-12 col-sm-4">
+              <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body text-center">
+          <% if @ubicacion.present? %>
+            <% tipo      = @tipo.parameterize(separator: '_') %>
+            <% ubicacion = @ubicacion.parameterize(separator: '_') %>
+            <% imagen    = "maps/#{tipo}/#{ubicacion}.png" %> 
+
+            <%= image_tag imagen,
+                  alt: "#{@tipo} – #{@ubicacion}",
+                  class: "img-fluid rounded shadow-sm border" %>
+
+            <p class="mt-2 text-muted"><%= @tipo %> en <%= @ubicacion %></p>
+          <% else %>
+            <p class="text-muted mb-0">Selecciona una ubicación para ver el mapa.</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h6 mb-0">Resultados</h2>
+            <% if @ubicacion.present? %>
+              <span class="badge text-bg-light"><%= @ubicacion %></span>
+            <% end %>
+          </div>
+
+          <% if @espacios.any? %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Capacidad</th>
+                    <th>Acciones</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% @espacios.each do |espacio| %>
+                    <tr>
+                      <td><%= espacio.nombre %></td>
+                      <td><%= espacio.capacidad.presence || "-" %></td>
+
+                      <td class="text-center">
+                        <%= link_to "Ver Reseñas",
+                                    "/resenas/buscar_resenas/#{espacio.id}",
+                                    class: "btn btn-sm btn-secondary" %>
+                      </td>
+
+                      <td class="text-center">
+                        <%= link_to "Reservar",
+                                    new_reserva_path(espacio_id: espacio.id),
+                                    class: "btn btn-sm btn-secondary" %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
+          <% else %>
+            <p class="text-muted mb-0">
+              No hay <%= @tipo.downcase %> disponibles
+              <%= @ubicacion.present? ? "en #{@ubicacion}" : "con los filtros actuales" %>.
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

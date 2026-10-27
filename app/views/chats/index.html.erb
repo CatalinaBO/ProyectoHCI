@@ -1,0 +1,15 @@
+<h1 class="text-center mt-4">Chats</h1>
+
+<% if @chats.any? %>
+  <div class="list-group mx-auto" style="max-width: 600px;">
+    <% @chats.each do |chat| %>
+      <%= link_to chat_path(chat), class: "list-group-item list-group-item-action" do %>
+        <strong>Espacio:</strong> <%= chat.espacio.nombre %><br>
+        <strong>Reserva:</strong> <%= chat.reserva.id %><br>
+        <small class="text-muted">Última actividad: <%= chat.updated_at.strftime("%d/%m %H:%M") %></small>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-center mt-5 text-muted">No tienes chats activos.</p>
+<% end %>

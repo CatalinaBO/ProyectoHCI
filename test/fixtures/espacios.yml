@@ -1,0 +1,49 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+CAI:
+  nombre: CAI
+  activo: true
+  tipo: Sala de Estudio
+  ubicacion: Ing
+  capacidad: 100
+  reservado: false
+
+DIPRE:
+  nombre: DIPRE
+  activo: true
+  tipo: Locker
+  ubicacion: Ing
+  capacidad: 100
+  reservado: false
+
+espacio_prueba:
+  id: 777
+  nombre: espacio falso
+  activo: true
+  tipo: Locker
+  ubicacion: Ing
+  capacidad: 100
+  reservado: false
+
+
+#one:
+#  espacio_id: 
+#  nombre: MyString
+#  tipo: MyString
+#  ubicacion: MyString
+#  capacidad: MyString
+#  activo: false
+#  reservable: false
+#  creado_en: 2025-10-03 01:00:23
+# actualizado_en: 2025-10-03 01:00:23
+
+#two:
+#  espacio_id: 
+#  nombre: MyString
+#  tipo: MyString
+#  ubicacion: MyString
+#  capacidad: MyString
+#  activo: false
+#  reservable: false
+#  creado_en: 2025-10-03 01:00:23
+#  actualizado_en: 2025-10-03 01:00:23

@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+m1:
+  hora_inicio: "08:20:00"
+  hora_fin:    "09:30:00"
+
+m2:
+  hora_inicio: "09:40:00"
+  hora_fin:    "10:50:00"
+
+#one:
+#  modulo_id: 
+#  hora_inicio: 2025-10-03 01:01:07
+#  hora_fin: 2025-10-03 01:01:07
+
+#two:
+#  modulo_id: 
+#  hora_inicio: 2025-10-03 01:01:07
+#  hora_fin: 2025-10-03 01:01:07

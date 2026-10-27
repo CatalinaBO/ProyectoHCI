@@ -1,0 +1,27 @@
+<h3 class="map-title">Biblioteca San Joaquín</h3>
+<div class="map-sub">2° Piso</div>
+
+<div class="map-canvas">
+  <div class="map-split">
+
+    <div class="map-box">
+      <div class="grid" style="--cols:6">
+        <% 30.times do %><div class="cell cell-blue"></div><% end %>
+      </div>
+      <div class="map-lbl">Mesas individuales</div>
+    </div>
+
+    <div class="map-box">
+      <div class="grid" style="--cols:6">
+        <% 30.times do %><div class="cell cell-red"></div><% end %>
+      </div>
+      <div class="map-lbl">Mesas grupales</div>
+    </div>
+  </div>
+
+  <div class="mt-3 map-legend">
+    <span class="swatch swatch-blue"></span> Mesa individual
+    &nbsp;&nbsp;
+    <span class="swatch swatch-red"></span> Mesa grupal
+  </div>
+</div>

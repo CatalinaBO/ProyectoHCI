@@ -1,0 +1,35 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+resena_usuario_sobre_cai:
+  usuario:  usuario_normal
+  espacio:  CAI
+  reserva:  reserva_usuario_hoy_m1
+  rating:   4
+  comentario: "Terible wenos los sillones"
+
+resena_admin_sobre_cai:
+  usuario:  usuario_admin
+  espacio:  CAI
+  reserva:  reserva_admin_hoy_m2
+  rating:   5
+  comentario: "Buen servicio"
+
+# ---
+
+#one:
+#  reseña_id: 
+#  usuario: one
+#  espacio: one
+#  reserva: one
+#  rating: 1
+#  comentario: MyText
+#  creado_en: 2025-10-03 01:04:24
+
+#two:
+#  reseña_id: 
+#  usuario: two
+#  espacio: two
+#  reserva: two
+#  rating: 1
+#  comentario: MyText
+#  creado_en: 2025-10-03 01:04:24

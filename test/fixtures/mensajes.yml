@@ -1,0 +1,22 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+# test/fixtures/mensajes.yml
+
+mensaje_inicial:
+  chat: chat_carlos_cai_m1
+  usuario: usuario_normal
+  contenido: "Hola, tengo una duda sobre mi reserva."
+  created_at: <%= Time.current %>
+  updated_at: <%= Time.current %>
+
+# ---
+
+#one:
+#  chat: one
+#  usuario: one
+#  contenido: MyText
+
+#two:
+#  chat: two
+#  usuario: two
+#  contenido: MyText

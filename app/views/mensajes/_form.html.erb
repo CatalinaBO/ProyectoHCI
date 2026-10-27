@@ -1,0 +1,10 @@
+<%!= form_with url: chat_mensajes_path(chat),
+              scope: :mensaje,
+              local: false,
+              data: { turbo: true },
+              class: "d-flex",
+              id: "form-mensaje" do |f| %>
+  <%= f.text_area :contenido, rows: 1, class: "form-control me-2",
+                  placeholder: "Escribe un mensaje...", id: "input-mensaje" %>
+  <%= f.submit "Enviar", class: "btn btn-primary" %>
+<% end %>

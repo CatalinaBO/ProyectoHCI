@@ -1,0 +1,45 @@
+<div class="container mt-5">
+  <div class="card shadow p-4 mx-auto" style="max-width: 500px;">
+    <h2 class="text-center mb-4">Mi Perfil</h2>
+
+    <div class="text-center mb-3">
+      <% if @usuario.foto_perfil.attached? %>
+        <%= image_tag @usuario.foto_perfil.variant(resize_to_fill: [160, 160]).processed,
+                      alt: "Foto de perfil",
+                      class: "rounded-circle img-thumbnail" %>
+      <% else %>
+        <%= image_tag "default-foto_perfil.png",
+                      alt: "Sin foto",
+                      class: "rounded-circle img-thumbnail",
+                      size: "160x160" %>
+      <% end %>
+    </div>
+
+    <p><strong>Nombre:</strong> <%= @usuario.nombre %></p>
+    <p><strong>Email:</strong> <%= @usuario.email %></p>
+    <p><strong>Estado:</strong> <%= @usuario.estado.capitalize %></p>
+    <p><strong>Información personal:</strong></p>
+    <p><%= @usuario.info_personal.presence || "No ha agregado información personal aún." %></p>
+
+    <div class="text-center mt-4">
+      <%= link_to "Editar perfil", editar_perfil_path, class: "btn btn-primary me-2" %>
+      <%= link_to "Cambiar contraseña", editar_contrasena_path, class: "btn btn-warning me-2" %>
+
+      <%= button_to "Eliminar mi cuenta",
+            eliminar_cuenta_path,
+            method: :delete,
+            form: { data: { turbo_confirm: "¿Seguro que deseas eliminar tu cuenta? Esta acción no se puede deshacer." } },
+            class: "btn btn-danger" %>
+
+      <% if current_user&.admin? %>
+        <%= link_to "Volver al inicio", admin_inicio_path, class: "btn btn-link" %>
+
+      <% elsif current_user&.moderador? %>
+        <%= link_to "Volver al inicio", moderador_inicio_path, class: "btn btn-link" %>
+
+      <% else %>
+        <%= link_to "Volver al inicio", root_path, class: "btn btn-link" %>
+      <% end %>
+    </div>
+  </div>
+</div>

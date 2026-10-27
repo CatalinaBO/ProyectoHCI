@@ -1,0 +1,52 @@
+<div class="min-vh-100 py-5 bg-body-tertiary">
+  <div class="container d-flex flex-column align-items-center">
+    <h1 class="mb-4 fw-bold text-center" style="color: #2c3e50;">¡Crea un Nuevo Espacio!</h1>
+
+    <% if @espacio.errors.any? %>
+      <div class="alert alert-danger w-60 text-center mb-4">
+        <h6 class="mb-2">Por favor completa los campos requeridos:</h6>
+      </div>
+    <% end %>
+
+
+    <div class="card shadow-sm border-0 rounded-4 p-4" style="max-width: 500px; width: 100%;">
+      <%= form_with model: @espacio, url: espacios_path, local: true do |f| %>
+        <div class="mb-3">
+          <%= f.label :nombre, "Nombre del espacio:", class: "form-label fw-semibold" %>
+          <%= f.text_field :nombre, class: "form-control", placeholder: "Indica el nombre del nuevo espacio" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :tipo, "Tipo:", class: "form-label fw-semibold" %>
+          <%= f.select :tipo, ["Sala de Estudio", "Mesa", "Locker"], { prompt: "Selecciona el tipo de espacio" }, class: "form-select" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :ubicacion, "Ubicación:", class: "form-label fw-semibold" %>
+          <%= f.select :ubicacion, ["Biblioteca San Joaquín", "Biblioteca GAUSS", "Edificio CAI"], { prompt: "Selecciona la ubicación del espacio" }, class: "form-select" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :capacidad, "Capacidad:", class: "form-label fw-semibold" %>
+          <%= f.text_field :capacidad, class: "form-control", placeholder: "Indica la capacidad del nuevo espacio" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :activo, "Espacio Activo:", class: "form-label fw-semibold" %>
+          <%= f.select :activo, [["True", true], ["False", false]], {}, class: "form-select" %>
+        </div>
+
+
+        <div class="text-center mt-4">
+          <%= f.submit "Crear Espacio", class: "btn btn-primary px-4 py-2 fw-semibold" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% flash.each do |key, message| %>
+      <div class="alert mt-4 alert-<%= key == "notice" ? "success" : "danger" %> w-100 text-center">
+        <%= message %>
+      </div>
+    <% end %>
+  </div>
+</div>

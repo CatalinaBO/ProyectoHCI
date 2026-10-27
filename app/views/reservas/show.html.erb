@@ -1,0 +1,167 @@
+<%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" %>
+<%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" %>
+
+<div class="min-vh-100 py-5 bg-body-tertiary">
+  <div class="container">
+    <header class="text-center mb-4">
+      <h2 class="display-6 fw-semibold mb-3"><i class="bi bi-info-circle me-2"></i>Detalle de reserva</h2>
+      <p class="text-muted">Información completa de la reserva seleccionada.</p>
+    </header>
+
+    <div class="card shadow-sm border-0 rounded-4 mx-auto" style="max-width: 700px; background-color:#f8f8f8;">
+      <div class="card-body p-4">
+
+        <h5 class="fw-bold mb-3"><i class=""></i>Datos de la reserva:</h5>
+        <div class="mb-2">
+          <span class="fw-semibold"><i class="bi bi-building me-2"></i>Espacio:</span>
+          <%= @reserva.espacio.nombre %>
+        </div>
+        <div class="mb-2">
+          <span class="fw-semibold"><i class="bi bi-clock me-2"></i>Módulo:</span>
+          <%= "#{@reserva.modulo.hora_inicio.strftime('%H:%M')} - #{@reserva.modulo.hora_fin.strftime('%H:%M')}" %>
+        </div>
+        <div class="mb-2">
+          <span class="fw-semibold"><i class="bi bi-calendar-date me-2"></i>Fecha:</span>
+          <%= @reserva.fecha.strftime('%d/%m/%Y') %>
+        </div>
+
+        <div class="mb-2">
+          <span class="fw-semibold"><i class="bi bi-person-circle me-2"></i>Mensaje Administrador:</span>
+          <%= @reserva.rechazo_motivo %>
+        </div>
+
+        <div class="mb-4">
+          <div class="d-flex justify-content-center align-items-center gap-3 mt-4">
+            <%= button_to "Ayuda",
+            chats_path(espacio_id: @reserva.espacio_id, reserva_id: @reserva.id),
+            method: :post,
+            class: "btn btn-outline-info" %>
+            <% if @reserva.cancelable? %>
+              <%= button_to cancel_reserva_path(@reserva),
+                            method: :patch,
+                            form: { data: { turbo_confirm: "¿Cancelar esta reserva?" } },
+                            class: "btn btn-outline-danger fw-bold px-4 d-flex align-items-center gap-1" do %>
+                <i class="bi bi-x-circle"></i> Cancelar
+              <% end %>
+
+              <% if @reserva.editable? %>
+                <%= link_to edit_reserva_path(@reserva),
+                            class: "btn btn-outline-warning fw-bold px-4 d-flex align-items-center gap-1" do %>
+                  <i class="bi bi-pencil-square"></i> Modificar
+                <% end %>
+              <% end %>
+            <% else %>
+              <p class="text-muted fw-semibold mb-0">
+                <i class="bi bi-ban me-1"></i>Esta reserva no puede cancelarse.
+              </p>
+            <% end %>
+
+          </div>
+
+          <% if @reserva.empezada? && !@reserva.cancelada? && !@reserva.rechazada? %>
+            <h5 class="fw-semibold mb-3">
+              <i class="bi bi-chat-text me-2"></i>Mi Reseña
+            </h5>
+            
+            <% if @resena.nil? %>
+              
+              <div id="resena-container" class="card shadow-sm border-0 rounded-4 p-3 mb-4" style="background-color: #f8f8f8; max-width:700px;">
+                
+                <div id="resena-vacia" class="text-center text-muted py-4" style="cursor:pointer;">
+                  <i class="bi bi-plus-circle fs-2"></i>
+                  <p class="mb-0">Agregar reseña</p>
+                </div>
+
+                <div id="resena-form" style="display:none;">
+                  <div class="d-flex gap-1 mb-2" id="star-rating">
+                    <% 5.times do |i| %>
+                      <i class="bi bi-star fs-5" data-value="<%= i+1 %>" style="cursor:pointer;"></i>
+                    <% end %>
+                  </div>
+
+                  <%= form_with url: '/resenas', method: :post, local: true do |f| %>
+                    <%= f.hidden_field :usuario_id, value: @reserva.usuario_id %>
+                    <%= f.hidden_field :espacio_id, value: @reserva.espacio_id %>
+                    <%= f.hidden_field :reserva_id, value: @reserva.id %>
+                    <%= f.hidden_field :rating, id: "resena-rating" %>
+                    <%= f.text_area :comentario, class: "form-control mb-2", rows: 3, placeholder: "Escribe tu reseña..." %>
+                    <button type="submit" class="btn btn-primary w-100">Guardar reseña</button>
+                  <% end %>
+
+                </div>
+              </div>
+
+            <script>
+              document.addEventListener("DOMContentLoaded", () => {
+                const resenaVacia = document.getElementById("resena-vacia");
+                const resenaForm = document.getElementById("resena-form");
+                const stars = document.querySelectorAll("#star-rating i");
+                const inputRating = document.getElementById("resena-rating");
+                let calificacion = 0;
+
+                if(resenaVacia && resenaForm && stars.length > 0){
+                  resenaVacia.addEventListener("click", () => {
+                    resenaVacia.style.display = "none";
+                    resenaForm.style.display = "block";
+                  });
+
+                  stars.forEach(star => {
+                    star.addEventListener("mouseover", () => {
+                      const value = star.dataset.value;
+                      stars.forEach(s => s.classList.toggle("bi-star-fill", s.dataset.value <= value));
+                      stars.forEach(s => s.classList.toggle("bi-star", s.dataset.value > value));
+                    });
+
+                    star.addEventListener("click", () => {
+                      calificacion = star.dataset.value;
+                      inputRating.value = calificacion;
+                    });
+
+                    star.addEventListener("mouseout", () => {
+                      stars.forEach(s => s.classList.toggle("bi-star-fill", s.dataset.value <= calificacion));
+                      stars.forEach(s => s.classList.toggle("bi-star", s.dataset.value > calificacion));
+                    });
+                  });
+                }
+              });
+            </script>
+
+            <% else %>
+
+              <div id="resena-fija" class="card shadow-sm border-0 rounded-4 p-3 mb-4" style="background-color: #f8f8f8; max-width:700px;">
+
+                <div class="fw-semibold mb-2">
+                  <% 1.upto(5) do |i| %>
+                    <i class="bi <%= i <= @resena.rating ? 'bi-star-fill text-warning' : 'bi-star text-warning' %> fs-5"></i>
+                  <% end %>
+                </div>
+
+                <p><%= @resena.comentario %></p>
+
+                <%= button_to "/resenas/#{@resena.id}",
+                      method: :delete,
+                      class: "btn btn-link text-danger position-absolute",
+                      style: "bottom: 10px; right: 10px; text-decoration: none;" do %>
+                  <i class="bi bi-trash3 fs-5"></i>
+                <% end %>
+              </div>
+
+            <% end %>
+
+
+
+
+          <% end %>
+
+        
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <%= link_to mis_reservas_path, class: "btn btn-outline-dark fw-bold px-4" do %>
+        <i class="bi bi-arrow-left-circle me-1"></i>Volver a mis reservas
+      <% end %>
+    </div>
+  </div>
+</div>
+<%= javascript_include_tag "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" %>

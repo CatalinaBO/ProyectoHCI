@@ -1,0 +1,3 @@
+<%= turbo_stream.append "mensajes",
+  partial: "mensajes/mensaje",
+  locals: { mensaje: @chat.mensajes.last } %>

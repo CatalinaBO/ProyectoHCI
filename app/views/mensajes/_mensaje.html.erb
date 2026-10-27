@@ -1,0 +1,10 @@
+<div id="mensaje_<%= mensaje.id %>"
+     class="msg d-flex mb-2"
+     data-user-id="<%= mensaje.usuario_id %>">
+  <div class="bubble rounded px-3 py-2 shadow-sm" style="max-width:70%; font-size:0.9rem;">
+    <div class="small mb-1" style="opacity:0.8; font-size:0.75rem;">
+      <%= mensaje.usuario&.nombre || "Usuario" %> · <%= l(mensaje.created_at, format: :short) %>
+    </div>
+    <%= simple_format(h(mensaje.contenido)) %>
+  </div>
+</div>

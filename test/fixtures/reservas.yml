@@ -1,0 +1,43 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+reserva_usuario_hoy_m1:
+  usuario: usuario_normal
+  espacio: CAI
+  modulo:  m1
+  fecha: 2026-10-23
+  estado: pendiente
+
+reserva_admin_hoy_m2:
+  usuario: usuario_admin
+  espacio: CAI
+  modulo:  m2
+  fecha: 2026-10-24
+  estado: pendiente
+
+#one:
+#  reserva_id: 
+#  usuario: one
+#  espacio: one
+#  fecha: 2025-10-03
+#  modulo: one
+#  estado: MyString
+#  confirmada_por: 1
+#  confirmada_en: 2025-10-03 01:03:51
+#  rechazada_por: 1
+#  rechazo_motivo: MyString
+#  creado_en: 2025-10-03 01:03:51
+#  actualizado_en: 2025-10-03 01:03:51
+
+#two:
+#  reserva_id: 
+#  usuario: two
+#  espacio: two
+#  fecha: 2025-10-03
+#  modulo: two
+#  estado: MyString
+#  confirmada_por: 1
+#  confirmada_en: 2025-10-03 01:03:51
+#  rechazada_por: 1
+#  rechazo_motivo: MyString
+#  creado_en: 2025-10-03 01:03:51
+#  actualizado_en: 2025-10-03 01:03:51
