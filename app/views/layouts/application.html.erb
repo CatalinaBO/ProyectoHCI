@@ -28,14 +28,6 @@
  <body data-current-user-id="<%= current_user&.id %>">
     <%= render "layouts/navbar" %>
 
-    <% flash.each do |type, message| %>
-      <div class="flash <%= type %>" style="margin:10px 0; padding:8px; border-radius:6px; background:#eef;">
-        <%= message %>
-      </div>
-    <% end %>
-
-    <%= yield %>
-
     <!-- Bootstrap CSS -->
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
