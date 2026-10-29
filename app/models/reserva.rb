@@ -15,8 +15,10 @@ class Reserva < ApplicationRecord
   #Validaciones
   validates :fecha, :espacio_id, :modulo_id, presence: true
 
-  #***Nuevas reservas en pendiente
-  after_initialize { self.estado ||= 'pendiente' if new_record? }
+
+  after_initialize do
+    { self.estado ||= 'confirmada' if new_record? }
+  end
 
   #Validación reserva empezada y cancelable según hora de acción
   def inicio_datetime
@@ -26,13 +28,16 @@ class Reserva < ApplicationRecord
       modulo.hora_inicio.hour, modulo.hora_inicio.min
     )
   end
+
   def empezada?
     hora = inicio_datetime
     hora.present? && Time.current >= hora
   end
+
   def editable?
     !cancelada? && !empezada? && !rechazada?
   end
+  
   def cancelable?
     !cancelada? && !empezada? && !rechazada?
   end

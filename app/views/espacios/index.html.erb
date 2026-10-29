@@ -1,15 +1,7 @@
 <div class="container py-4">
-  <h1 class="h3 mb-4">Espacios disponibles</h1>
+  <h1 class="h3 mb-4">Salas de Estudio disponibles en CAI</h1>
 
   <div class="row g-4">
-    <div class="col-12 col-md-4">
-      <%= link_to espacios_por_tipo_path(tipo: 'Mesa'), class: "text-decoration-none" do %>
-        <div class="p-5 border rounded-4 text-center shadow-sm h-100">
-          <div class="h4 mb-1">Mesas</div>
-          <div class="text-muted"><%= (@counts['Mesa'] || 0) %> disponibles</div>
-        </div>
-      <% end %>
-    </div>
 
     <div class="col-12 col-md-4">
       <%= link_to espacios_por_tipo_path(tipo: 'Sala de Estudio'), class: "text-decoration-none" do %>
@@ -20,13 +12,6 @@
       <% end %>
     </div>
 
-    <div class="col-12 col-md-4">
-      <%= link_to espacios_por_tipo_path(tipo: 'Locker'), class: "text-decoration-none" do %>
-        <div class="p-5 border rounded-4 text-center shadow-sm h-100">
-          <div class="h4 mb-1">Lockers</div>
-          <div class="text-muted"><%= (@counts['Locker'] || 0) %> disponibles</div>
-        </div>
-      <% end %>
-    </div>
+    
   </div>
 </div>

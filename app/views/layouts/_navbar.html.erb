@@ -1,13 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
   <div class="container">
     
-    <% if logged_in? && current_user.admin? %>
-      <%= link_to "Bookify", '/admin/inicio', class: "navbar-brand fw-bold" %>
-    <% elsif logged_in? && current_user.moderador? %>
-      <%= link_to "Bookify", '/moderador/inicio', class: "navbar-brand fw-bold" %>
-    <% else %>
-      <%= link_to "Bookify", root_path, class: "navbar-brand fw-bold" %>
-    <% end %>
+    <%= link_to "Bookify", root_path, class: "navbar-brand fw-bold" %>
+   
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
       <span class="navbar-toggler-icon"></span>
@@ -20,18 +15,8 @@
         </li>
       <% end %>
       
-      <% if current_user && !current_user.admin? && !current_user.moderador? %>
-        <li class="nav-item">
-          <%= link_to "Mis Reservas", reservas_path, class: "nav-link" %>
-        </li>
-      <% end %>
     </ul>
 
-    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-      <li class="nav-item">
-        <%= link_to "Mis chats", chats_path, class: "nav-link" %>
-      </li>
-    </ul>
 
     <div class="collapse navbar-collapse justify-content-end" id="mainNav">
       <ul class="navbar-nav align-items-lg-center">

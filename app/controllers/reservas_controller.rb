@@ -3,8 +3,7 @@
 class ReservasController < ApplicationController
   before_action :require_login
   before_action :set_reserva, only: [:show, :edit, :update, :cancel]
-  # before_action :autorizar_duenio_o_admin!, only: [:show, :edit, :update, :cancel]
-
+  
 
   def index
     @reservas = Reserva.includes(:espacio, :modulo).where(usuario_id: current_user.id).order(fecha: :asc, 
@@ -14,26 +13,28 @@ class ReservasController < ApplicationController
   def new
     @reserva  = Reserva.new
     @modulos  = Modulo.all.order(:hora_inicio)
+    @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
 
     if params[:espacio_id].present?
-      @espacio = Espacio.find(params[:espacio_id])
-      @reserva.espacio = @espacio
-    else
-      @espacios = Espacio.where(activo: true)
+      @espacio = @espacios.find_by(id: params[:espacio_id])
+      if @espacio
+        @reserva.espacio = @espacio
+      else
+        redirect_to espacios_path, alert: 'La sala seleccionada no está disponible.'
+      end
     end
   end
 
   def create
     @reserva = Reserva.new(reserva_params)
     @reserva.usuario = current_user
-    @reserva.estado  = 'pendiente' ### PENDIENTE para que sea aceptada ###
+    @reserva.estado  = 'confirmada' 
 
-    # ** aún no implementado
-    @espacios = Espacio.where(activo: true)
+     @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
     @modulos  = Modulo.all.order(:hora_inicio)
 
     if @reserva.save
-      redirect_to reservas_path, notice: 'Reserva creada exitosamente.'
+      redirect_to reservas_path, notice: 'Reserva creada exitosamente!'
     else
       flash.now[:alert] = @reserva.errors.full_messages.to_sentence
       render :new, status: :unprocessable_entity
@@ -49,35 +50,27 @@ class ReservasController < ApplicationController
   end
 
   def edit
-    unless puede_ver?(@reserva)
-      redirect_to mis_reservas_path, alert: 'No tienes permiso.'
+    
+    unless puede_ver?(@reserva) && @reserva.editable?
+      redirect_to reservas_path, alert: 'Esta reserva no puede modificarse.'
       return
     end
 
-    unless @reserva.editable?
-      redirect_to mis_reservas_path, alert: 'Esta reserva no puede modificarse.'
-      return
-    end
-
-    @espacios = Espacio.where(activo: true)
+    @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
     @modulos  = Modulo.order(:hora_inicio)
   end
 
   def update
-    unless puede_ver?(@reserva)
-      redirect_to mis_reservas_path, alert: 'No tienes permiso.'
-      return
-    end
 
-    unless @reserva.editable?
-      redirect_to mis_reservas_path, alert: 'Esta reserva no puede modificarse.'
+    unless puede_ver?(@reserva) && @reserva.editable?
+      redirect_to reservas_path, alert: 'Esta reserva no puede modificarse.'
       return
     end
 
     if @reserva.update(reserva_params)
       redirect_to mis_reservas_path, notice: 'Reserva actualizada correctamente.'
     else
-      @espacios = Espacio.where(activo: true)
+      @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
       @modulos  = Modulo.order(:hora_inicio)
       flash.now[:alert] = @reserva.errors.full_messages.to_sentence
       render :edit, status: :unprocessable_entity
@@ -102,65 +95,24 @@ class ReservasController < ApplicationController
     end
   end
 
-  def reservas_pendientes
-    @reservas = Reserva.where('estado = ?', 'pendiente').includes(:espacio, :modulo, :usuario)
-  end
-
-  def aceptar_reserva
-    @reserva = Reserva.find(params[:id])
-    @reserva.estado = 'confirmada'
-    @reserva.confirmada_en = Time.zone.now
-    @ubicacion = @reserva.espacio.ubicacion 
-
-    #@espacio = Reserva.find(params[:espacio_id])
-    #@modulo = Reserva.find(params[:modulo_id])
-    #@modulo = 
-
-    if @reserva.save && admin_user?
-      redirect_to '/reservas/reservas_pendientes', notice: 'Reserva confirmada con éxito.'
-
-    elsif @reserva.save && moderador_user?
-      redirect_to moderador_reservas_pendientes_path(@ubicacion), notice: 'Reserva confirmada con éxito.'
-
-    else
-      redirect_to '/reservas/reservas_pendientes', alert: 'Error al confirmar la reserva.'
-    end
-  end
-
-  def rechazar_reserva
-    @reserva = Reserva.find(params[:id])
-    @reserva.estado = 'rechazada'
-    @reserva.rechazo_motivo = params[:mensaje] if params[:mensaje].present?
-    @ubicacion = @reserva.espacio.ubicacion 
-    
-    if @reserva.save && admin_user?
-      redirect_to '/reservas/reservas_pendientes', notice: 'Reserva rechazada con éxito.'
-    
-    elsif @reserva.save && moderador_user?
-      redirect_to moderador_reservas_pendientes_path(@ubicacion), notice: 'Reserva rechazada con éxito.'
-
-    else
-      redirect_to '/reservas/reservas_pendientes', alert: 'Error al rechazar la reserva.'
-    end
-  end
   
+
   private
 
   def reserva_params
     params.require(:reserva).permit(:espacio_id, :modulo_id, :fecha)
   end
 
-  # *** Autoriza usuario sea dueño o admin (aún no implementado)
+
   def puede_ver?(reserva)
-    return false unless current_user
-    reserva.usuario_id == current_user.id || (current_user.respond_to?(:admin?) && current_user.admin?)
+   current_user.present? && reserva.usuario_id == current_user.id
   end
 
   def set_reserva
     @reserva = Reserva.find(params[:id])
   end
 
- # Combina fecha + hora_inicio del módulo (si existen) para saber si ya empezó
+
   def reserva_empezada?(reserva)
     return false unless reserva.fecha && reserva.modulo&.hora_inicio
 

@@ -1,40 +1,13 @@
 # frozen_string_literal: true
 
 class EspaciosController < ApplicationController
-  TIPOS = ['Mesa', 'Sala de Estudio', 'Locker'].freeze
-  UBICACIONES = [
-    { label: 'Biblioteca San Joaquín', value: 'Biblioteca San Joaquín' },
-    { label: 'Biblioteca Gauss',       value: 'Biblioteca GAUSS' },
-    { label: 'CAI',                    value: 'Edificio CAI' }   
-  ].freeze
+  TIPO_SALA = 'Sala de Estudio'.freeze
 
-  def new
-    @espacio = Espacio.new
-  end
-
-  def create
-    @espacio = Espacio.new(espacio_params)
-    @espacio.reservado = false
-
-    if @espacio.save
-
-      SalaEstudio.create(espacio_id: @espacio.id) if @espacio.tipo == 'Sala de Estudio'
-
-      Locker.create(espacio_id: @espacio.id) if @espacio.tipo == 'Locker'
-
-      Mesa.create(espacio_id: @espacio.id) if @espacio.tipo == 'Mesa'
-
-      flash[:notice] = 'Espacio guardado correctamente :)'
-      redirect_to '/espacios/new'
-
-    else
-      render :new, status: :unprocessable_entity
-    end
-  end
+  UBICACION_CAI = 'Edificio CAI'.freeze
 
   def index
-    base = Espacio.where(reservado: false)
-    @counts = base.group(:tipo).count
+    @espacios = Espacio.where(activo: true, reservado: false, tipo: TIPO_SALA, ubicacion: UBICACION_CAI).order(:nombre)
+    @counts = { TIPO_SALA => @espacios.count }
   end
 
   def todos_los_espacios
@@ -49,15 +22,6 @@ class EspaciosController < ApplicationController
 
   end
 
-  def espacios_eliminar
-    @espacios = Espacio.all
-  end
-
-  def destroy
-    @espacio_eliminado = Espacio.find(params[:id])
-    @espacio_eliminado.destroy
-    redirect_to '/espacios/espacios_eliminar'
-  end
 
   def filtrar_espacios
     @espacios = Espacio.where(reservado: false)
@@ -69,20 +33,10 @@ class EspaciosController < ApplicationController
 
   def por_tipo
     @tipo = params[:tipo].to_s
-    raise ActiveRecord::RecordNotFound unless TIPOS.include?(@tipo)
+    raise ActiveRecord::RecordNotFound unless @tipo == TIPO_SALA
 
-    @ubicaciones = UBICACIONES
-    @ubicacion   = params[:ubicacion].presence
-
-    scope = Espacio.where(activo: true, reservado: false, tipo: @tipo)
-    scope = scope.where(ubicacion: @ubicacion) if @ubicacion.present?
-    @espacios = scope.order(:nombre)
-
-    @titulo = case @tipo
-              when 'Mesa' then 'Mesas disponibles'
-              when 'Sala de Estudio' then 'Salas de estudio disponibles'
-              when 'Locker' then 'Lockers disponibles'
-              end
+    @espacios = Espacio.where(activo: true, reservado: false, tipo: TIPO_SALA, ubicacion: UBICACION_CAI).order(:nombre)
+    @titulo = 'Salas de estudio disponibles en CAI'
   end
 
   private
