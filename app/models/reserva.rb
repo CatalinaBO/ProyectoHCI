@@ -9,16 +9,14 @@ class Reserva < ApplicationRecord
     pendiente:  'pendiente',
     confirmada: 'confirmada',
     rechazada:  'rechazada',
-    cancelada:  'cancelada'}
-  #PENDIENTE/CONFIRMADA *
+    cancelada:  'cancelada'
+  }
+
 
   #Validaciones
   validates :fecha, :espacio_id, :modulo_id, presence: true
 
-
-  after_initialize do
-    { self.estado ||= 'confirmada' if new_record? }
-  end
+  after_initialize :establecer_estado_por_defecto
 
   #Validación reserva empezada y cancelable según hora de acción
   def inicio_datetime
@@ -44,7 +42,13 @@ class Reserva < ApplicationRecord
 
   #Validación espacio no ocupado
   validate :espacio_disponible
+
   private # PRIVATE
+
+  def establecer_estado_por_defecto
+    self.estado = 'confirmada' if new_record? && estado.blank?
+  end
+  
   def espacio_disponible
     return if espacio_id.blank? || fecha.blank? || modulo_id.blank?
 
@@ -59,3 +63,4 @@ class Reserva < ApplicationRecord
     end
   end
 end
+
