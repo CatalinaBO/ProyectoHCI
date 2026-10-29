@@ -66,3 +66,18 @@ MODULOS = [
 MODULOS.each do |inicio, fin|
   Modulo.find_or_create_by!(hora_inicio: inicio, hora_fin: fin)
 end
+
+(1..10).each do |numero|
+  espacio = Espacio.find_or_initialize_by(
+    nombre: "Sala de Estudio CAI #{numero}"
+  )
+
+  espacio.tipo = 'Sala de Estudio'
+  espacio.ubicacion = 'Edificio CAI'
+  espacio.capacidad = '6'
+  espacio.activo = true
+  espacio.reservado = false
+  espacio.save!
+
+  SalaEstudio.find_or_create_by!(espacio: espacio)
+end
