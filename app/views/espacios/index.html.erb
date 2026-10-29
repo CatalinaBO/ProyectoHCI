@@ -15,27 +15,29 @@
       </div>
     <% end %>
 
-    <!-- ESPACIO -->
-    <h2 class="h5 text-center mb-3"><i class="bi bi-building me-1"></i>Espacios</h2>
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
       <% @espacios.each do |e| %>
-        <% activo = (@reserva.espacio_id == e.id) %>
         <div class="col">
-          <div class="card rounded-3 shadow-sm <%= 'border-primary' if activo %> h-100">
-            <div class="card-header py-2 <%= 'text-bg-primary border-primary' if activo %>">
+          <div class="card rounded-3 shadow-sm h-100">
+            <div class="card-header py-2 text-bg-primary border-primary">
               <h4 class="h6 my-0"><%= e.nombre %></h4>
             </div>
+
             <div class="card-body py-3 px-3">
               <ul class="list-unstyled mb-0 small text-muted">
-                <% if e.respond_to?(:ubicacion) && e.ubicacion.present? %>
-                  <li class="mb-1"><i class="bi bi-geo-alt me-1"></i><%= e.ubicacion %></li>
+                <% if e.ubicacion.present? %>
+                  <li class="mb-1">
+                    <i class="bi bi-geo-alt me-1"></i><%= e.ubicacion %>
+                  </li>
                 <% end %>
-                <% if e.respond_to?(:capacidad) && e.capacidad.present? %>
-                  <li><i class="bi bi-people me-1"></i>Capacidad: <%= e.capacidad %></li>
+
+                <% if e.capacidad.present? %>
+                  <li>
+                    <i class="bi bi-people me-1"></i>Capacidad: <%= e.capacidad %>
+                  </li>
                 <% end %>
               </ul>
             </div>
-
           </div>
         </div>
       <% end %>
