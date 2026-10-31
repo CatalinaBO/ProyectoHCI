@@ -5,14 +5,17 @@ reserva_usuario_hoy_m1:
   espacio: CAI
   modulo:  m1
   fecha: 2026-10-23
-  estado: pendiente
+  estado: confirmada
+  grupo: grupo-usuario
+  created_at: 2026-10-22 12:00:00
 
 reserva_admin_hoy_m2:
   usuario: usuario_admin
   espacio: CAI
   modulo:  m2
   fecha: 2026-10-24
-  estado: pendiente
+  estado: confirmada
+  grupo: grupo-admin
 
 #one:
 #  reserva_id: 

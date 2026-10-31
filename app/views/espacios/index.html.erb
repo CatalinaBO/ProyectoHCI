@@ -1,56 +1,168 @@
-
-<%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" %>
-<%= stylesheet_link_tag "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" %>
-
-<div class="bg-light text-dark min-vh-100 py-5">
-  <div class="container">
-    <header class="pricing-header p-3 pb-md-4 mx-auto text-center">
-      <h1 class="display-4 fw-normal text-body-emphasis">Salas de Estudio disponibles en CAI</h1>
+<div class="bg-light text-dark min-vh-100 py-4">
+  <div class="container-xl">
+    <header class="mb-3">
+      <h1 class="h2 fw-bold text-start m-0" style="color:#2c3e50;">Disponibilidad de salas CAI</h1>
+      <p class="text-muted mb-0">Revisa los módulos antes de ir al campus. Elige los bloques que necesitas y continúa con la reserva.</p>
     </header>
 
-    <% if flash[:alert].present? %>
-      <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <%= flash[:alert] %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- Selector de fecha -->
+    <%= form_with url: espacios_path, method: :get, local: true, class: "d-flex flex-wrap align-items-end gap-2 mb-3" do %>
+      <div>
+        <label for="fecha" class="form-label small fw-semibold mb-1"><i class="bi bi-calendar-date me-1"></i>Fecha</label>
+        <%= date_field_tag :fecha, @fecha, min: @hoy, class: "form-control form-control-sm", onchange: "this.form.requestSubmit()" %>
       </div>
+      <span class="fw-semibold pb-1"><%= fecha_larga(@fecha) %></span>
+      <% if @fecha != @hoy %>
+        <%= link_to "Volver a hoy", espacios_path, class: "btn btn-link btn-sm pb-1" %>
+      <% end %>
+      <noscript><button class="btn btn-sm btn-secondary">Ver</button></noscript>
     <% end %>
 
-    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
-      <% @espacios.each do |e| %>
-        <div class="col">
-          <div class="card rounded-3 shadow-sm h-100">
-            <div class="card-header py-2 text-bg-primary border-primary">
-              <h4 class="h6 my-0"><%= e.nombre %></h4>
-            </div>
+    <!-- Leyenda de estados -->
+    <div class="leyenda mb-2">
+      <span><%= estado_badge("Disponible") %> se puede solicitar</span>
+      <span><%= estado_badge("Liberada") %> alguien la dejó antes, se puede solicitar</span>
+      <span><%= estado_badge("Reservada") %> hay una solicitud registrada</span>
+      <span><%= estado_badge("Uso iniciado") %> el titular declaró su llegada</span>
+      <span><%= estado_badge("Sin información confirmada") %> reservada, pero nadie declaró el inicio</span>
+    </div>
+    <p class="small text-muted mb-3">
+      <i class="bi bi-info-circle me-1"></i>Una reserva registrada no significa que haya alguien dentro de la sala.
+      Información actualizada a las <strong><%= @actualizado_en.strftime('%H:%M') %></strong>.
+      <%= link_to espacios_path(fecha: @fecha), class: "ms-1" do %><i class="bi bi-arrow-clockwise"></i> Actualizar<% end %>
+    </p>
 
-            <div class="card-body py-3 px-3">
-              <ul class="list-unstyled mb-0 small text-muted">
-                <% if e.ubicacion.present? %>
-                  <li class="mb-1">
-                    <i class="bi bi-geo-alt me-1"></i><%= e.ubicacion %>
-                  </li>
-                <% end %>
+    <%= form_with url: reservas_path, method: :post, local: true, id: "form-reserva" do %>
+      <%= hidden_field_tag :fecha, @fecha %>
+      <%= hidden_field_tag :espacio_id, @espacio_preseleccionado, id: "espacio_id" %>
 
-                <% if e.capacidad.present? %>
-                  <li>
-                    <i class="bi bi-people me-1"></i>Capacidad: <%= e.capacidad %>
-                  </li>
+      <!-- Cuadrícula: salas en filas, módulos en columnas -->
+      <div class="grilla-wrap mb-3">
+        <table class="grilla">
+          <thead>
+            <tr>
+              <th class="sala">Sala</th>
+              <% @modulos.each do |m| %>
+                <th><%= m.etiqueta %></th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% @espacios.each do |e| %>
+              <tr>
+                <th class="sala" scope="row"><%= e.nombre.sub("Sala de Estudio ", "Sala ") %></th>
+                <% @modulos.each do |m| %>
+                  <%
+                    r = @celdas[[e.id, m.id]]
+                    terminado = m.terminado?(@fecha)
+                    texto = r ? r.estado_visible : "Disponible"
+                    seleccionable = !terminado && (r.nil? || r.liberada?)
+                    preseleccionada = seleccionable && @espacio_preseleccionado == e.id && @modulos_preseleccionados.include?(m.id)
+                  %>
+                  <td>
+                    <% if seleccionable %>
+                      <label class="celda seleccionable <%= 'seleccionada' if preseleccionada %>"
+                             data-espacio="<%= e.id %>" data-sala="<%= e.nombre %>"
+                             data-modulo="<%= m.etiqueta %>" data-capacidad="<%= e.capacidad %>">
+                        <input type="checkbox" name="modulo_ids[]" value="<%= m.id %>" <%= 'checked' if preseleccionada %>
+                               aria-label="<%= e.nombre %>, <%= m.etiqueta %>, <%= texto %>">
+                        <%= estado_badge(texto) %>
+                        <% if r&.liberada? %>
+                          <span class="detalle">desde <%= r.updated_at.strftime('%H:%M') %></span>
+                        <% end %>
+                      </label>
+                    <% elsif terminado %>
+                      <span class="celda bloqueada" title="Este módulo ya terminó">
+                        <span class="badge-estado estado-finalizada">Terminado</span>
+                      </span>
+                    <% else %>
+                      <span class="celda bloqueada" title="No disponible">
+                        <%= estado_badge(texto) %>
+                        <span class="detalle">No disponible · <%= r.updated_at.strftime('%H:%M') %></span>
+                      </span>
+                    <% end %>
+                  </td>
                 <% end %>
-              </ul>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Panel: ficha + módulos seleccionados + continuar -->
+      <div class="panel-seleccion p-3 p-md-4 mb-4" id="panel-seleccion">
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <h2 class="h5 fw-bold mb-3" id="ficha-titulo"><i class="bi bi-info-square me-1"></i>Antes de reservar</h2>
+            <%= render "espacios/ficha_sala" %>
+          </div>
+          <div class="col-lg-5">
+            <h2 class="h5 fw-bold mb-2"><i class="bi bi-check2-square me-1"></i>Módulos seleccionados</h2>
+            <p class="text-muted small mb-2" id="sin-seleccion">Aún no eliges módulos. Toca una celda <strong>Disponible</strong> o <strong>Liberada</strong> en la cuadrícula.</p>
+            <div id="resumen-seleccion" class="d-none">
+              <p class="mb-1"><i class="bi bi-building me-1"></i><strong id="resumen-sala"></strong></p>
+              <p class="mb-1 small text-muted"><i class="bi bi-calendar-date me-1"></i><%= fecha_larga(@fecha) %></p>
+              <ul id="resumen-modulos" class="mb-2 small"></ul>
+              <p class="small text-muted mb-2">Puedes elegir varios módulos, pero todos de la misma sala. Para cambiar de sala, desmarca los que elegiste.</p>
             </div>
+            <button type="submit" id="btn-continuar" class="btn btn-primary w-100 fw-semibold" disabled>
+              Continuar con la reserva <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+            <% unless logged_in? %>
+              <p class="small text-muted mt-2 mb-0">Para confirmar te pediremos entrar. Puedes hacerlo como <strong>invitado</strong>, sin crear cuenta.</p>
+            <% end %>
           </div>
         </div>
-      <% end %>
-    </div>
-
-
-    <div class="text-center">
-
-      <%= link_to new_reserva_path, class: "btn btn-primary btn-sm" do %>
-      <i class="bi bi-plus-circle me-1"></i>Nueva reserva
-      <% end %>
-
-    </div>
-
+      </div>
+    <% end %>
   </div>
 </div>
+
+<script>
+  (function () {
+    const form = document.getElementById("form-reserva");
+    if (!form) return;
+    const celdas = Array.from(form.querySelectorAll(".celda.seleccionable"));
+    const espacioInput = document.getElementById("espacio_id");
+    const resumen = document.getElementById("resumen-seleccion");
+    const sinSeleccion = document.getElementById("sin-seleccion");
+    const resumenSala = document.getElementById("resumen-sala");
+    const resumenModulos = document.getElementById("resumen-modulos");
+    const boton = document.getElementById("btn-continuar");
+
+    function actualizar() {
+      const marcadas = celdas.filter(c => c.querySelector("input").checked);
+      const espacio = marcadas.length ? marcadas[0].dataset.espacio : "";
+      espacioInput.value = espacio;
+
+      celdas.forEach(c => {
+        const input = c.querySelector("input");
+        const otraSala = espacio && c.dataset.espacio !== espacio;
+        input.disabled = !!otraSala;
+        c.classList.toggle("otra-sala", !!otraSala);
+        c.classList.toggle("seleccionada", input.checked);
+      });
+
+      resumenModulos.innerHTML = "";
+      marcadas.forEach(c => {
+        const li = document.createElement("li");
+        li.textContent = c.dataset.modulo;
+        resumenModulos.appendChild(li);
+      });
+      resumenSala.textContent = marcadas.length ? marcadas[0].dataset.sala : "";
+      resumen.classList.toggle("d-none", marcadas.length === 0);
+      sinSeleccion.classList.toggle("d-none", marcadas.length > 0);
+      boton.disabled = marcadas.length === 0;
+      boton.textContent = "";
+      boton.append(marcadas.length > 1
+        ? `Continuar con la reserva (${marcadas.length} módulos) `
+        : "Continuar con la reserva ");
+      const icono = document.createElement("i");
+      icono.className = "bi bi-arrow-right ms-1";
+      boton.appendChild(icono);
+    }
+
+    celdas.forEach(c => c.querySelector("input").addEventListener("change", actualizar));
+    actualizar();
+  })();
+</script>

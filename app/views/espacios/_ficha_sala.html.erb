@@ -1,0 +1,35 @@
+<%# Ficha informativa de la sala (Decisión 4). Uso: render "espacios/ficha_sala", espacio: e, solo_acceso: false %>
+<% solo_acceso = local_assigns.fetch(:solo_acceso, false) %>
+<% capacidad = local_assigns[:espacio]&.capacidad.presence || "6" %>
+
+<div class="ficha">
+  <% unless solo_acceso %>
+    <h6><i class="bi bi-people me-1"></i>Modalidad de uso</h6>
+    <ul>
+      <li>Uso grupal: la sala está pensada para grupos (capacidad: <%= capacidad %> personas).</li>
+      <li>
+        Uso individual (clase en línea, entrevista, reunión):
+        <span class="pendiente-validacion">Pendiente de validación con el CAI</span><br>
+        <span class="text-muted small">Hoy la regla informal pide mínimo 2 personas. Mientras el CAI no lo confirme, no necesitas anotar a otra persona.</span>
+      </li>
+    </ul>
+
+    <h6><i class="bi bi-card-checklist me-1"></i>Requisitos para solicitar</h6>
+    <ul>
+      <li>La fecha parte en el día de hoy. Reservar con días de anticipación:
+        <span class="pendiente-validacion">Pendiente de validación con el CAI</span></li>
+      <li>Puedes elegir uno o varios módulos de una misma sala.</li>
+      <li>Solo se pueden elegir bloques <strong>Disponible</strong> o <strong>Liberada</strong>.</li>
+    </ul>
+  <% end %>
+
+  <h6><i class="bi bi-door-open me-1"></i>Cómo acceder</h6>
+  <ul>
+    <li>Ve directo a la sala a la hora del módulo. No se pide TUC ni se entregan llaves.</li>
+    <li>Al llegar, presiona <strong>"Registrar inicio de uso"</strong> en <em>Mi reserva</em>.</li>
+    <li>Si no registras el inicio dentro de los primeros 15 minutos, la sala aparecerá como
+      <strong>"Sin información confirmada"</strong>. Liberación automática:
+      <span class="pendiente-validacion">Pendiente de validación con el CAI</span></li>
+    <li>Si terminas antes, usa <strong>"Finalizar uso"</strong> para que otros puedan ocupar los módulos que quedan.</li>
+  </ul>
+</div>

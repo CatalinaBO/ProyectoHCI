@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_13_150124) do
+ActiveRecord::Schema[7.1].define(version: 2026_10_31_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -140,8 +140,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_13_150124) do
     t.string "rechazo_motivo", limit: 250
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["espacio_id", "fecha", "modulo_id"], name: "idx_reservas_unicas_por_espacio_fecha_modulo", unique: true
+    t.string "grupo"
+    t.datetime "inicio_uso_en"
+    t.datetime "finalizada_en"
+    t.index ["espacio_id", "fecha", "modulo_id"], name: "idx_reservas_activas_unicas", unique: true, where: "estado IN ('pendiente', 'confirmada', 'en_uso')"
     t.index ["espacio_id"], name: "index_reservas_on_espacio_id"
+    t.index ["grupo"], name: "index_reservas_on_grupo"
     t.index ["modulo_id"], name: "index_reservas_on_modulo_id"
     t.index ["usuario_id"], name: "index_reservas_on_usuario_id"
   end

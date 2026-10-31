@@ -23,7 +23,9 @@ module A20252Grupo56
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    config.time_zone = "America/Santiago"
+    # Las columnas time (módulos) se guardan sin zona horaria.
+    config.active_record.time_zone_aware_types = [:datetime]
     # config.eager_load_paths << Rails.root.join("extras")
 
     # Only loads a smaller set of middleware suitable for API only apps.

@@ -1,0 +1,120 @@
+<%
+  activos = @reservas.select { |r| r.confirmada? || r.en_uso? }
+  por_liberar = activos.reject(&:terminada?)
+%>
+<div class="bg-light min-vh-100 py-5">
+  <div class="container" style="max-width: 720px;">
+    <header class="mb-4">
+      <h1 class="h2 fw-bold m-0" style="color:#2c3e50;"><i class="bi bi-bookmark-check me-2"></i>Mi reserva</h1>
+    </header>
+
+    <div class="tarjeta-reserva p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        <div>
+          <div class="fw-bold fs-5"><%= @espacio.nombre %></div>
+          <div class="text-muted small"><%= @espacio.ubicacion %> · <%= fecha_larga(@fecha) %></div>
+        </div>
+        <%= estado_badge(@estado_grupo) %>
+      </div>
+
+      <h2 class="h6 fw-bold">Módulos</h2>
+      <ul class="list-unstyled mb-3">
+        <% @reservas.each do |r| %>
+          <li class="d-flex justify-content-between border-bottom py-1">
+            <span><i class="bi bi-clock me-1"></i><%= r.modulo.etiqueta %></span>
+            <%= estado_badge(r.estado_visible) %>
+          </li>
+        <% end %>
+      </ul>
+
+      <% inicio = @reservas.map(&:inicio_uso_en).compact.min %>
+      <% if inicio %>
+        <p class="small mb-1">
+          <i class="bi bi-person-check me-1"></i>Inicio de uso declarado por ti a las <strong><%= inicio.strftime('%H:%M') %></strong>.
+          <span class="text-muted">Es una declaración tuya, no una verificación de presencia.</span>
+        </p>
+      <% end %>
+      <% fin = @reservas.map(&:finalizada_en).compact.max %>
+      <% if fin %>
+        <p class="small mb-1"><i class="bi bi-flag me-1"></i>Uso finalizado a las <strong><%= fin.strftime('%H:%M') %></strong>.</p>
+      <% end %>
+
+      <!-- Acciones (D5 y D6) -->
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <% if @puede_iniciar %>
+          <%= button_to iniciar_mi_reserva_path(@grupo), method: :patch, class: "btn btn-success fw-semibold" do %>
+            <i class="bi bi-door-open me-1"></i>Registrar inicio de uso
+          <% end %>
+        <% elsif @cancelable && @fecha == Date.current %>
+          <span class="small text-muted align-self-center">
+            <i class="bi bi-info-circle me-1"></i>Podrás registrar el inicio de uso desde 15 minutos antes de tu primer módulo.
+          </span>
+        <% end %>
+
+        <% if @finalizable %>
+          <button type="button" class="btn btn-outline-danger fw-semibold" data-bs-toggle="modal" data-bs-target="#modal-accion">
+            <i class="bi bi-flag me-1"></i>Finalizar uso
+          </button>
+        <% elsif @cancelable %>
+          <button type="button" class="btn btn-outline-danger fw-semibold" data-bs-toggle="modal" data-bs-target="#modal-accion">
+            <i class="bi bi-x-circle me-1"></i>Cancelar reserva
+          </button>
+        <% end %>
+      </div>
+    </div>
+
+    <% if @cancelable || @finalizable %>
+      <div class="tarjeta-reserva p-4 mb-4">
+        <h2 class="h6 fw-bold mb-2"><i class="bi bi-signpost-2 me-1"></i>Instrucciones de acceso</h2>
+        <%= render "espacios/ficha_sala", espacio: @espacio, solo_acceso: true %>
+      </div>
+    <% end %>
+
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+      <%= link_to mis_reservas_path, class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-arrow-left me-1"></i>Mis reservas
+      <% end %>
+      <%= link_to espacios_path(fecha: @fecha), class: "btn btn-outline-secondary" do %>
+        <i class="bi bi-grid-3x3 me-1"></i>Ver disponibilidad
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<% if @cancelable || @finalizable %>
+  <!-- Ventana de confirmación (D6) -->
+  <div class="modal fade" id="modal-accion" tabindex="-1" aria-labelledby="modal-accion-titulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="modal-accion-titulo">
+            <%= @finalizable ? "¿Finalizar el uso de la sala?" : "¿Cancelar esta reserva?" %>
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2"><strong><%= @espacio.nombre %></strong> · <%= fecha_larga(@fecha) %></p>
+          <% if por_liberar.any? %>
+            <p class="mb-1">Estos módulos quedarán disponibles para otros estudiantes:</p>
+            <ul class="mb-2">
+              <% por_liberar.each do |r| %>
+                <li><%= r.modulo.etiqueta %></li>
+              <% end %>
+            </ul>
+          <% end %>
+          <p class="small text-muted mb-0">
+            <%= @finalizable ? "Avisas que ya dejaste la sala. Esta acción no se puede deshacer." : "Tu reserva dejará de existir. Si la vuelves a necesitar, tendrás que reservar de nuevo." %>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Volver</button>
+          <% if @finalizable %>
+            <%= button_to "Sí, finalizar uso", finalizar_mi_reserva_path(@grupo), method: :patch, class: "btn btn-danger" %>
+          <% else %>
+            <%= button_to "Sí, cancelar reserva", cancelar_mi_reserva_path(@grupo), method: :patch, class: "btn btn-danger" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

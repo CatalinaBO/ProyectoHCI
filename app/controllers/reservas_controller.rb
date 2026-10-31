@@ -1,126 +1,189 @@
 # frozen_string_literal: true
 
 class ReservasController < ApplicationController
-  before_action :require_login
-  before_action :set_reserva, only: [:show, :edit, :update, :cancel]
-  
+  before_action :require_login, except: [:create]
+  before_action :set_grupo, only: %i[mi_reserva registrada iniciar cancelar finalizar]
 
+  # "Mis reservas": una fila por solicitud (grupo de módulos).
   def index
-    @reservas = Reserva.includes(:espacio, :modulo).where(usuario_id: current_user.id).order(fecha: :asc, 
-                                                                                             modulo_id: :asc)
+    reservas = Reserva.includes(:espacio, :modulo)
+                      .where(usuario_id: current_user.id)
+                      .where.not(estado: 'rechazada')
+                      .order(fecha: :desc)
+    @grupos = reservas.group_by(&:grupo).values
+                      .map { |rs| rs.sort_by { |r| r.modulo.hora_inicio } }
+                      .sort_by { |rs| [rs.first.fecha, rs.first.modulo.hora_inicio] }
+                      .reverse
   end
 
+  # La reserva se hace desde la cuadrícula de disponibilidad.
   def new
-    @reserva  = Reserva.new
-    @modulos  = Modulo.all.order(:hora_inicio)
-    @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
-
-    if params[:espacio_id].present?
-      @espacio = @espacios.find_by(id: params[:espacio_id])
-      if @espacio
-        @reserva.espacio = @espacio
-      else
-        redirect_to espacios_path, alert: 'La sala seleccionada no está disponible.'
-      end
-    end
+    redirect_to espacios_path(espacio_id: params[:espacio_id])
   end
 
   def create
-    @reserva = Reserva.new(reserva_params)
-    @reserva.usuario = current_user
-    @reserva.estado  = 'confirmada' 
+    seleccion = {
+      'espacio_id' => params[:espacio_id],
+      'fecha' => params[:fecha],
+      'modulo_ids' => Array(params[:modulo_ids])
+    }
 
-     @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
-    @modulos  = Modulo.all.order(:hora_inicio)
+    unless logged_in?
+      session[:seleccion_pendiente] = seleccion
+      redirect_to login_path, alert: 'Para confirmar tu reserva, entra como invitado o inicia sesión.'
+      return
+    end
 
-    if @reserva.save
-      redirect_to reservas_path, notice: 'Reserva creada exitosamente!'
+    resultado = crear_grupo(seleccion)
+    if resultado[:ok]
+      redirect_to reserva_registrada_path(resultado[:grupo])
     else
-      flash.now[:alert] = @reserva.errors.full_messages.to_sentence
-      render :new, status: :unprocessable_entity
+      redirect_to espacios_path(fecha: seleccion['fecha']), alert: resultado[:error]
     end
   end
 
+  # Ruta antigua por id: lleva a la vista "Mi reserva".
   def show
-    @reserva = Reserva.find(params[:id])
-    @resena = Resena.find_by(reserva_id: @reserva.id)
-    unless puede_ver?(@reserva)
-      redirect_to reservas_path, alert: 'No tienes permiso para ver esta reserva.'
+    reserva = Reserva.find_by(id: params[:id], usuario_id: current_user.id)
+    if reserva
+      redirect_to mi_reserva_path(reserva.grupo)
+    else
+      redirect_to mis_reservas_path, alert: 'No tienes permiso para ver esta reserva.'
     end
   end
 
   def edit
-    
-    unless puede_ver?(@reserva) && @reserva.editable?
-      redirect_to reservas_path, alert: 'Esta reserva no puede modificarse.'
-      return
-    end
-
-    @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
-    @modulos  = Modulo.order(:hora_inicio)
+    redirect_to mis_reservas_path, alert: 'Para cambiar una reserva, cancélala y elige nuevos módulos.'
   end
 
   def update
-
-    unless puede_ver?(@reserva) && @reserva.editable?
-      redirect_to reservas_path, alert: 'Esta reserva no puede modificarse.'
-      return
-    end
-
-    if @reserva.update(reserva_params)
-      redirect_to mis_reservas_path, notice: 'Reserva actualizada correctamente.'
-    else
-      @espacios = Espacio.where(activo: true, reservado: false, tipo: 'Sala de Estudio', ubicacion: 'Edificio CAI').order(:nombre)
-      @modulos  = Modulo.order(:hora_inicio)
-      flash.now[:alert] = @reserva.errors.full_messages.to_sentence
-      render :edit, status: :unprocessable_entity
-    end
+    edit
   end
 
-
+  # Ruta antigua por id.
   def cancel
-    if @reserva.cancelada?
-      redirect_back fallback_location: @reserva, notice: "La reserva ya estaba cancelada."
-      return
-    end
-    if reserva_empezada?(@reserva)
-      redirect_to @reserva, alert: "No puedes cancelar una reserva que ya comenzó."
-      return
-    end
-    
-    if @reserva.update(estado: 'cancelada')
-      redirect_to mis_reservas_path, notice: "Reserva cancelada correctamente."
-    else
-      redirect_to mis_reservas_path, alert: @reserva.errors.full_messages.to_sentence
-    end
+    reserva = Reserva.find_by(id: params[:id], usuario_id: current_user.id)
+    return redirect_to(mis_reservas_path, alert: 'Reserva no encontrada.') unless reserva
+
+    redirect_to mi_reserva_path(reserva.grupo)
   end
 
-  
+  def registrada; end
+
+  def mi_reserva; end
+
+  # D5: el titular declara que comenzó a usar la sala.
+  def iniciar
+    unless puede_iniciar_uso?(@reservas)
+      redirect_to mi_reserva_path(@grupo), alert: 'Solo puedes registrar el inicio de uso durante el horario reservado.'
+      return
+    end
+
+    ahora = Time.current
+    Reserva.transaction do
+      @reservas.select(&:confirmada?).each { |r| r.update!(estado: 'en_uso', inicio_uso_en: ahora) }
+    end
+    redirect_to mi_reserva_path(@grupo),
+                notice: 'Inicio de uso registrado. Lo declaraste tú: no es una verificación de presencia.'
+  end
+
+  # D6: antes del inicio de uso.
+  def cancelar
+    unless grupo_cancelable?(@reservas)
+      redirect_to mi_reserva_path(@grupo), alert: 'Esta reserva ya no se puede cancelar.'
+      return
+    end
+
+    Reserva.transaction do
+      @reservas.select { |r| r.confirmada? || r.pendiente? }.each { |r| r.update!(estado: 'cancelada') }
+    end
+    redirect_to mi_reserva_path(@grupo), notice: 'Reserva cancelada. Los módulos quedaron disponibles para otros estudiantes.'
+  end
+
+  # D6: después del inicio de uso, libera el módulo en curso y los siguientes.
+  def finalizar
+    unless @reservas.any?(&:en_uso?)
+      redirect_to mi_reserva_path(@grupo), alert: 'Primero debes registrar el inicio de uso.'
+      return
+    end
+
+    ahora = Time.current
+    Reserva.transaction do
+      @reservas.select { |r| r.en_uso? || r.confirmada? }.each do |r|
+        nuevo = r.terminada? ? 'finalizada' : 'liberada'
+        r.update!(estado: nuevo, finalizada_en: ahora)
+      end
+    end
+    redirect_to mi_reserva_path(@grupo), notice: 'Uso finalizado. Los módulos restantes quedaron liberados.'
+  end
 
   private
 
-  def reserva_params
-    params.require(:reserva).permit(:espacio_id, :modulo_id, :fecha)
+  def set_grupo
+    @grupo = params[:grupo].to_s
+    @reservas = Reserva.includes(:espacio, :modulo)
+                       .where(grupo: @grupo, usuario_id: current_user.id)
+                       .to_a
+                       .sort_by { |r| r.modulo.hora_inicio }
+    if @reservas.empty?
+      redirect_to mis_reservas_path, alert: 'No encontramos esa reserva.'
+      return
+    end
+
+    @espacio = @reservas.first.espacio
+    @fecha = @reservas.first.fecha
+    @estado_grupo = helpers.estado_grupo(@reservas)
+    @puede_iniciar = puede_iniciar_uso?(@reservas)
+    @cancelable = grupo_cancelable?(@reservas)
+    @finalizable = @reservas.any?(&:en_uso?)
   end
 
+  def crear_grupo(seleccion)
+    espacio = Espacio.find_by(id: seleccion['espacio_id'], activo: true)
+    modulos = Modulo.where(id: seleccion['modulo_ids'].map(&:to_i).uniq).order(:hora_inicio).to_a
+    fecha = begin
+      Date.parse(seleccion['fecha'].to_s)
+    rescue ArgumentError
+      nil
+    end
 
-  def puede_ver?(reserva)
-   current_user.present? && reserva.usuario_id == current_user.id
+    return { ok: false, error: 'Selecciona una sala.' } unless espacio
+    return { ok: false, error: 'Selecciona al menos un módulo.' } if modulos.empty?
+    return { ok: false, error: 'La fecha no es válida.' } if fecha.nil? || fecha < Date.current
+
+    terminado = modulos.find { |m| m.terminado?(fecha) }
+    return { ok: false, error: "El módulo #{terminado.etiqueta} ya terminó." } if terminado
+
+    grupo = SecureRandom.uuid
+    Reserva.transaction do
+      modulos.each do |m|
+        r = Reserva.new(usuario: current_user, espacio: espacio, modulo: m, fecha: fecha,
+                        estado: 'confirmada', grupo: grupo)
+        next if r.save
+
+        raise ConflictoReserva, "El módulo #{m.etiqueta} de #{espacio.nombre} ya no está disponible; " \
+                                'no se registró la reserva.'
+      end
+    end
+    { ok: true, grupo: grupo }
+  rescue ConflictoReserva => e
+    { ok: false, error: e.message }
+  rescue ActiveRecord::RecordNotUnique
+    { ok: false, error: 'Alguien reservó uno de esos módulos recién; no se registró la reserva. Elige otro bloque.' }
   end
 
-  def set_reserva
-    @reserva = Reserva.find(params[:id])
+  def puede_iniciar_uso?(reservas)
+    return false unless reservas.any?(&:confirmada?)
+    return false unless reservas.first.fecha == Date.current
+
+    inicio = reservas.first.inicio_datetime - Reserva::TOLERANCIA_MIN.minutes
+    fin = reservas.last.fin_datetime
+    Time.current.between?(inicio, fin)
   end
 
-
-  def reserva_empezada?(reserva)
-    return false unless reserva.fecha && reserva.modulo&.hora_inicio
-
-    inicio = Time.zone.local(
-      reserva.fecha.year, reserva.fecha.month, reserva.fecha.day,
-      reserva.modulo.hora_inicio.hour, reserva.modulo.hora_inicio.min
-    )
-    Time.current >= inicio
+  def grupo_cancelable?(reservas)
+    reservas.none?(&:en_uso?) && reservas.any? { |r| (r.confirmada? || r.pendiente?) && !r.terminada? }
   end
 
+  class ConflictoReserva < StandardError; end
 end

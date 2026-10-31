@@ -48,6 +48,13 @@ Rails.application.routes.draw do
   patch '/reservas/:id', to: 'reservas#update', as: :update_reserva
   patch  '/reservas/:id/cancel', to: 'reservas#cancel', as: :cancel_reserva
 
+  # Gestión de una solicitud (grupo de módulos)
+  get   '/reserva_registrada/:grupo', to: 'reservas#registrada', as: :reserva_registrada
+  get   '/mi_reserva/:grupo', to: 'reservas#mi_reserva', as: :mi_reserva
+  patch '/mi_reserva/:grupo/iniciar', to: 'reservas#iniciar', as: :iniciar_mi_reserva
+  patch '/mi_reserva/:grupo/cancelar', to: 'reservas#cancelar', as: :cancelar_mi_reserva
+  patch '/mi_reserva/:grupo/finalizar', to: 'reservas#finalizar', as: :finalizar_mi_reserva
+
   # Rutas para Reseñas
   post '/resenas', to: 'resenas#crear_resena', as: 'resenas'
   delete '/resenas/:id', to: 'resenas#eliminar_resena'
@@ -67,6 +74,7 @@ Rails.application.routes.draw do
   # Sesiones
   get '/login',  to: 'sesiones#new', as: :login
   post '/login',  to: 'sesiones#create'
+  post '/invitado', to: 'sesiones#invitado', as: :invitado
   delete '/logout', to: 'sesiones#destroy', as: :logout
 
   # Rutas para Chats

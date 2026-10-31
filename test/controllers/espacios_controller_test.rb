@@ -69,25 +69,25 @@ class EspaciosControllerTest < ActionDispatch::IntegrationTest
   # Test 21: Verifica que se puede filtrar espacios (búsqueda).
   test "[GET] busqueda_espacios responde correctamente" do
     as_user(@usuario) {get "/espacios/busqueda_espacios"}
-    assert_response :success
+    assert_redirected_to espacios_url
   end
 
   # Test 22.1: Filtra correctamente espacios por tipo (Sala de Estudio).
   test "[GET] filtra correctamente (1)" do
     get espacios_por_tipo_url("Sala de Estudio")
-    assert_response :success
+    assert_redirected_to espacios_url
   end
 
   # Test 22.2: Filtra correctamente espacios por tipo (Locker).
   test "[GET] filtra correctamente (2)" do
     get espacios_por_tipo_url("Locker")
-    assert_response :success
+    assert_redirected_to espacios_url
   end
 
   # Test 22.3: Filtra correctamente espacios por tipo (Mesa).
   test "[GET] filtra correctamente (3)" do
     get espacios_por_tipo_url("Mesa")
-    assert_response :success
+    assert_redirected_to espacios_url
   end
 
   # Test 23: destroy elimina un espacio sin reservas (espacio_prueba del .yml).

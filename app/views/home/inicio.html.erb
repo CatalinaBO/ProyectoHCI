@@ -1,15 +1,18 @@
-<section class="d-flex align-items-center min-vh-100">
+<section class="d-flex align-items-center" style="min-height: 80vh;">
   <div class="container text-center">
-    <p class="text-uppercase mb-2 fw-semibold text-muted">Bienvenido a</p>
-    <h1 class="display-1 fw-bold">Bookify</h1>
+    <p class="text-uppercase mb-2 fw-semibold text-muted">Salas de estudio del CAI</p>
+    <h1 class="display-3 fw-bold">Bookify</h1>
 
     <p class="lead mx-auto mt-3" style="max-width: 720px;">
-      Donde podrás reservar salas de estudio de forma simple.
+      Revisa qué salas del Centro de Alumnos de Ingeniería están libres antes de ir al campus,
+      resérvalas y avisa cuando las dejas.
     </p>
 
     <div class="mt-4">
-      <%= link_to "Ver Espacios", espacios_path, class: "btn btn-lg btn-secondary px-5" %>
+      <%= link_to espacios_path, class: "btn btn-lg btn-primary px-5" do %>
+        <i class="bi bi-grid-3x3 me-2"></i>Ver disponibilidad de salas
+      <% end %>
     </div>
-
+    <p class="small text-muted mt-3 mb-0">No necesitas cuenta para revisar la disponibilidad.</p>
   </div>
 </section>

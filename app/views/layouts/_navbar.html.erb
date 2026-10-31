@@ -1,42 +1,46 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
   <div class="container">
-    
     <%= link_to "Bookify", root_path, class: "navbar-brand fw-bold" %>
-   
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="Abrir menú">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-      <% if !logged_in?%>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <%= link_to "Mis Reservas", reservas_path, class: "nav-link" %>
+          <%= link_to espacios_path, class: "nav-link #{'active fw-semibold' if current_page?(espacios_path)}" do %>
+            <i class="bi bi-grid-3x3 me-1"></i>Disponibilidad
+          <% end %>
         </li>
-      <% end %>
-
-      <% if current_user  %>
-        <li class="nav-item">
-          <%= link_to "Mis Reservas", reservas_path, class: "nav-link" %>
-        </li>
-      <% end %>
-      
-    </ul>
-
-
-    <div class="collapse navbar-collapse justify-content-end" id="mainNav">
-      <ul class="navbar-nav align-items-lg-center">
         <% if logged_in? %>
-          <li class="nav-item me-2 text-muted small d-none d-lg-block">
-            Hola, <%= current_user.nombre || current_user.email %> !
-          </li>
-          <li class="nav-item"><%= link_to "Ver Perfil", perfil_path, class: "btn btn-outline-secondary me-2" %></li>
           <li class="nav-item">
-            <%= button_to "Cerrar sesión", logout_path, method: :delete, class: "btn btn-danger" %>
+            <%= link_to mis_reservas_path, class: "nav-link #{'active fw-semibold' if current_page?(mis_reservas_path)}" do %>
+              <i class="bi bi-journal-text me-1"></i>Mis reservas
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <ul class="navbar-nav align-items-lg-center gap-2">
+        <% if logged_in? %>
+          <li class="nav-item text-muted small d-none d-lg-block">
+            Hola, <%= current_user.nombre.presence || current_user.email %>
+          </li>
+          <% unless current_user.email.to_s.end_with?("@demo.local") %>
+            <li class="nav-item"><%= link_to "Ver perfil", perfil_path, class: "btn btn-outline-secondary btn-sm" %></li>
+          <% end %>
+          <li class="nav-item">
+            <%= button_to "Cerrar sesión", logout_path, method: :delete, class: "btn btn-outline-danger btn-sm" %>
           </li>
         <% else %>
-          <li class="nav-item"><%= link_to "Iniciar sesión", login_path, class: "btn btn-primary me-2" %></li>
-          <li class="nav-item"><%= link_to "Registrarse", signup_path, class: "btn btn-outline-primary" %></li>
+          <li class="nav-item">
+            <%= button_to invitado_path, method: :post, class: "btn btn-primary btn-sm" do %>
+              <i class="bi bi-person me-1"></i>Entrar como invitado
+            <% end %>
+          </li>
+          <li class="nav-item"><%= link_to "Iniciar sesión", login_path, class: "btn btn-outline-primary btn-sm" %></li>
         <% end %>
       </ul>
     </div>

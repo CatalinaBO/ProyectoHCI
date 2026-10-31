@@ -1,0 +1,54 @@
+/* ===== Estados (D2) ===== */
+.badge-estado {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.estado-disponible { background: #d1f2df; color: #0f5132; }
+.estado-liberada   { background: #cfe8ff; color: #084298; }
+.estado-reservada  { background: #ffe8b3; color: #664d03; }
+.estado-uso        { background: #f8d0d4; color: #842029; }
+.estado-sin-info   { background: #e2e3e5; color: #41464b; border: 1px dashed #6c757d; }
+.estado-finalizada { background: #ececec; color: #6c757d; }
+.estado-cancelada  { background: #ececec; color: #6c757d; text-decoration: line-through; }
+
+/* ===== Cuadrícula de disponibilidad (D1, D3) ===== */
+.grilla-wrap { overflow-x: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); background: #fff; }
+table.grilla { width: 100%; margin: 0; border-collapse: separate; border-spacing: 0; box-shadow: none; border-radius: 0; }
+table.grilla th, table.grilla td { padding: 6px; border-bottom: 1px solid #eee; text-align: center; vertical-align: middle; background: #fff; color: #333; }
+table.grilla thead th { background: #2c3e50; color: #fff; font-size: .8rem; font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+table.grilla th.sala { text-align: left; white-space: nowrap; position: sticky; left: 0; z-index: 1; background: #f8f9fa; color: #2c3e50; font-size: .85rem; }
+table.grilla thead th.sala { background: #2c3e50; color: #fff; z-index: 2; }
+table.grilla tr:hover td { background: #fff; }
+
+.celda { display: block; margin: 0; min-width: 92px; padding: 6px 4px; border-radius: 8px; border: 2px solid transparent; cursor: default; }
+.celda input { position: absolute; opacity: 0; pointer-events: none; }
+.celda .detalle { display: block; font-size: .68rem; color: #6c757d; margin-top: 2px; }
+.celda.seleccionable { cursor: pointer; }
+.celda.seleccionable:hover { border-color: #9ec5fe; }
+.celda.seleccionada { border-color: #0d6efd; background: #e7f1ff; box-shadow: 0 0 0 2px rgba(13,110,253,.25); }
+.celda.seleccionada .badge-estado { background: #0d6efd; color: #fff; }
+.celda.bloqueada { opacity: .75; }
+.celda.otra-sala { opacity: .35; cursor: not-allowed; }
+.celda input:focus-visible + .badge-estado { outline: 2px solid #0d6efd; outline-offset: 2px; }
+
+/* ===== Leyenda ===== */
+.leyenda { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: .82rem; }
+
+/* ===== Panel de selección (D3, D4) ===== */
+.panel-seleccion { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.ficha h6 { font-size: .9rem; font-weight: 700; color: #2c3e50; margin-bottom: 4px; }
+.ficha ul { padding-left: 1.1rem; margin-bottom: .75rem; font-size: .88rem; }
+.pendiente-validacion { display: inline-block; font-size: .72rem; font-weight: 600; color: #664d03; background: #fff3cd; border: 1px solid #ffe69c; border-radius: 6px; padding: 0 6px; }
+
+/* ===== Confirmación (D5) ===== */
+.check-confirmacion { width: 64px; height: 64px; border-radius: 50%; background: #d1f2df; color: #0f5132; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; }
+.tarjeta-reserva { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.tarjeta-reserva dt { font-weight: 600; color: #6c757d; font-size: .85rem; }
+.tarjeta-reserva dd { margin-bottom: .6rem; }
+
+.contenido-flash { max-width: 960px; }
